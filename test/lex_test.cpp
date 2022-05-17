@@ -6,7 +6,8 @@
 #include <iterator>
 
 TEST_CASE("Normal testing") {
-  std::ifstream ins{"./lox_program/lox_1.lox"};
+  std::string file = std::string(SOURCE_PATH) + "/test/lox_program/lox_1.lox";
+  std::ifstream ins{file};
   bstring source{std::istreambuf_iterator<char>(ins),
                  std::istreambuf_iterator<char>()};
   REQUIRE_FALSE(source.empty());

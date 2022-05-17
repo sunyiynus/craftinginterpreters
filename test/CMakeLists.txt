@@ -18,8 +18,10 @@ message("this is funcing mess ${SRC_INCLUDE_PATH}")
 
 target_include_directories(tests PRIVATE ${SRC_INCLUDE_PATH})
 enable_testing()
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lox_program
-     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+target_compile_definitions(tests PUBLIC SOURCE_PATH=${CMAKE_SOURCE_DIR})
+
+message("binary file : ${CMAKE_CURRENT_BINARY_DIR}")
+message("binary file : ${CMAKE_BINARY_DIR} ${EXECUTABLE_OUTPUT_PATH}")
 
 add_test (NAME MyTest COMMAND tests -d yes)
 add_test (NAME MyTest-1 COMMAND tests)
