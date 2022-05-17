@@ -128,9 +128,11 @@ void Scanner::addToken(TOKEN_TYPE type) {
 //
 //
 
-bool Scanner::match(bstring charactor) {
-
-  if (curr != source.end() && *curr == charactor[0]) {
+bool Scanner::match(bstring matchStr) {
+  if (matchStr.empty()) {
+    return false;
+  }
+  if (curr != source.end() && *curr == matchStr[0]) {
     curr++;
     return true;
   } else {

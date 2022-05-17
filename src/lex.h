@@ -97,7 +97,7 @@ public:
 protected:
   void scanToken(bstring &line);
   void addToken(TOKEN_TYPE type);
-  bool match(bstring charactor);
+  bool match(bstring matchStr);
   void advance();
   void strings();
   void identifier();
