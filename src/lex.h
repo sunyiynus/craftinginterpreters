@@ -6,11 +6,13 @@
 #include <functional>
 #include <istream>
 #include <list>
+#include <map>
 
 namespace bello {
 
-void ireport(const int line, bstring where, const bstring message);
-void error(const int line, const bstring message);
+//void ireport(const int line, bstring where, bstring message);
+//void error(const int line, bstring message);
+//void error(const int line, const char* message);
 
 enum class TOKEN_TYPE {
   // single charactor token
@@ -25,8 +27,9 @@ enum class TOKEN_TYPE {
   DOT,
   PLUS,
   MINUS,
-  STAR,         // *
-  SLASH,        // /
+  STAR,  // *
+  SLASH, // /
+  DOUBLE_SLASH,
   PERCENT_SIGN, // %
   // one or two charactor
   NOT_EQUAL,
@@ -68,6 +71,7 @@ const bstring PLUS = "+";
 const bstring ASSIGN = "=";
 const bstring MINUS = "-";
 const bstring MULTI = "*";
+
 } // namespace SToken
 
 struct Token {
@@ -79,14 +83,25 @@ struct Token {
   const bstring toString() const;
 };
 
+static std::map<bstring, TOKEN_TYPE> KeyWords{
+    {"and", TOKEN_TYPE::AND},     {"or", TOKEN_TYPE::OR},
+    {"if", TOKEN_TYPE::IF},       {"else", TOKEN_TYPE::ELSE},
+    {"while", TOKEN_TYPE::WHILE}, {"while", TOKEN_TYPE::WHILE}};
+
 class Scanner {
 public:
   Scanner();
   Scanner(const std::string &src);
   std::list<Token> &scanTokens();
-  void scanToken(const bstring &line);
-  void addToken(bstring literal, TOKEN_TYPE type);
-    void match(bstring::const_iterator& start, bstring::const_iterator& curr);
+
+protected:
+  void scanToken(bstring &line);
+  void addToken(TOKEN_TYPE type);
+  bool match(bstring charactor);
+  void advance();
+  void strings();
+  void identifier();
+  void number();
 
 private:
   bool errorFlag;
