@@ -1,12 +1,12 @@
 #include "lex.h"
 #include "types.h"
 
+#include <_ctype.h>
 #include <cctype>
 #include <iostream>
 #include <sstream>
 
 using namespace bello;
-
 
 Token::Token(const std::string &litr, const bsize_t ln, TOKEN_TYPE t)
     : literal(litr), line(ln), type(t) {}
@@ -27,7 +27,7 @@ void berror(const int line, const char *message) {
 
 Scanner::Scanner() : errorFlag(false) {}
 
-Scanner::Scanner(const bstring &src) : source(src), errorFlag(false) {}
+Scanner::Scanner(const std::string &src) : source(src), errorFlag(false) {}
 
 std::list<Token> &Scanner::scanTokens() {
   scanToken(source);
@@ -42,10 +42,10 @@ void Scanner::scanToken(std::string &line) {
   curr = start + 1;
 
   while (start != line.end()) {
-    if (std::isalpha(*start)) {
+    if (isalpha(*start)) {
       identifier();
       continue;
-    } else if (std::isalnum(*start)) {
+    } else if (isnumber(*start)) {
       number();
       continue;
     } else {
@@ -121,7 +121,7 @@ void Scanner::scanToken(std::string &line) {
 
 void Scanner::addToken(TOKEN_TYPE type) {
   bstring literal = bstring(start, curr);
-  tokens.emplace_back(literal, line, type);
+  tokens.push_back(Token(literal, line, type));
   advance();
 }
 
@@ -156,7 +156,7 @@ void Scanner::strings() {
 void Scanner::identifier() {
 
   while (curr != source.end()) {
-    if (std::isalpha(*curr) || std::isalnum(*curr) || *curr == '_') {
+    if (isalpha(*curr) || isnumber(*curr) || *curr == '_') {
       curr++;
     } else {
       break;
@@ -171,7 +171,7 @@ void Scanner::number() {
   // 0xFFFF
   // 0o7777 ?
   while (curr != source.end()) {
-    if (std::isalnum(*curr) || *curr == '.') {
+    if (isnumber(*curr) || *curr == '.') {
       curr++;
     } else if (*curr == '\n') {
       addToken(TOKEN_TYPE::NUMBER);
