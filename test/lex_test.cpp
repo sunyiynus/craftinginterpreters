@@ -1,3 +1,4 @@
+#include "catch2/catch_message.hpp"
 #include "catch2/catch_test_macros.hpp"
 #include "lex.h"
 #include "types.h"
@@ -14,4 +15,5 @@ TEST_CASE("Normal testing") {
 
   bello::Scanner scanner{source};
   auto res = scanner.scanTokens();
+  REQUIRE_FALSE(res.empty());
 }
