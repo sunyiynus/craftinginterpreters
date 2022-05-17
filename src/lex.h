@@ -95,9 +95,9 @@ public:
   std::list<Token> &scanTokens();
 
 protected:
-  void scanToken(bstring &line);
+  void scanToken(bstring &src);
   void addToken(TOKEN_TYPE type);
-  bool match(bstring charactor);
+  bool match(bstring matchStr);
   void advance();
   void strings();
   void identifier();
@@ -114,6 +114,8 @@ private:
   bstring::iterator start;
   bstring::iterator curr;
 };
+
+inline bool isNewLine(char c) { return c == '\n'; }
 
 } // namespace bello
 

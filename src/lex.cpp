@@ -7,7 +7,6 @@
 
 using namespace bello;
 
-
 Token::Token(const std::string &litr, const bsize_t ln, TOKEN_TYPE t)
     : literal(litr), line(ln), type(t) {}
 
@@ -16,9 +15,6 @@ const bstring Token::toString() const { return lexeme; }
 void ireport(const int line, bstring where, bstring message) {
   std::cout << "[line " << line << "] Error " << where << ":" << message
             << std::endl;
-}
-void berror(const int line, bstring message) {
-  ireport(line, bstring(""), bstring(message));
 }
 
 void berror(const int line, const char *message) {
@@ -34,14 +30,15 @@ std::list<Token> &Scanner::scanTokens() {
   return tokens;
 }
 
-void Scanner::scanToken(std::string &line) {
-  start = line.begin();
-  if (line.empty()) {
+void Scanner::scanToken(std::string &source) {
+  start = source.begin();
+  if (source.empty()) {
     return;
   }
   curr = start + 1;
+  line = 1;
 
-  while (start != line.end()) {
+  while (start != source.end()) {
     if (std::isalpha(*start)) {
       identifier();
       continue;
@@ -78,9 +75,9 @@ void Scanner::scanToken(std::string &line) {
         addToken(TOKEN_TYPE::STAR);
         break;
       case '/':
-        if (curr != line.end() && *curr == '/') {
+        if (curr != source.end() && *curr == '/') {
           curr++;
-          while (*curr != '\n' && curr != line.end()) {
+          while (*curr != '\n' && curr != source.end()) {
             curr++;
           }
         } else {
@@ -109,9 +106,13 @@ void Scanner::scanToken(std::string &line) {
       case '"':
         strings();
         break;
-      default:
-        // berror(line, bstring("Some unknow charactors..."));
+      case '\n':
+        line++;
+        advance();
         break;
+      default:
+        // berror(line, "Some unknow charactors...");
+        return;
       }
       continue;
     }
@@ -128,9 +129,11 @@ void Scanner::addToken(TOKEN_TYPE type) {
 //
 //
 
-bool Scanner::match(bstring charactor) {
-
-  if (curr != source.end() && *curr == charactor[0]) {
+bool Scanner::match(bstring matchStr) {
+  if (matchStr.empty()) {
+    return false;
+  }
+  if (curr != source.end() && *curr == matchStr[0]) {
     curr++;
     return true;
   } else {
@@ -147,6 +150,9 @@ void Scanner::advance() {
 
 void Scanner::strings() {
   while (curr != source.end() && *curr != '"') {
+    if (isNewLine(*curr)) {
+      line++;
+    }
     curr++;
   }
   curr++;
@@ -154,10 +160,12 @@ void Scanner::strings() {
 }
 
 void Scanner::identifier() {
-
   while (curr != source.end()) {
     if (std::isalpha(*curr) || std::isalnum(*curr) || *curr == '_') {
       curr++;
+    } else if (isNewLine(*curr)) {
+      line++;
+      break;
     } else {
       break;
     }
