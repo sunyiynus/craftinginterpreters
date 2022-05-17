@@ -11,6 +11,8 @@ FetchContent_MakeAvailable(Catch2)
 set(SRC_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/src)
 file(GLOB SRC ./*.cpp)
 
+#add_definitions(-DSOURCE_PATH="${CMAKE_SOURCE_DIR}")
+
 add_executable(tests ${SRC})
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain bello)
 message("this is funcing mess ${Catch2_SOURCE_DIR}")
@@ -18,7 +20,10 @@ message("this is funcing mess ${SRC_INCLUDE_PATH}")
 
 target_include_directories(tests PRIVATE ${SRC_INCLUDE_PATH})
 enable_testing()
-target_compile_definitions(tests PUBLIC SOURCE_PATH=${CMAKE_SOURCE_DIR})
+target_compile_definitions(tests PUBLIC SOURCE_PATH="${CMAKE_SOURCE_DIR}")
+#set_source_files_properties(lex_test.cpp PROPERTIES COMPILE_DEFINITIONS -DSOURCE_PATH="${CMAKE_SOURCE_DIR}")
+
+
 
 message("binary file : ${CMAKE_CURRENT_BINARY_DIR}")
 message("binary file : ${CMAKE_BINARY_DIR} ${EXECUTABLE_OUTPUT_PATH}")
