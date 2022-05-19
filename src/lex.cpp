@@ -77,7 +77,12 @@ void Scanner::scanToken(std::string &source) {
       case '/':
         if (curr != source.end() && *curr == '/') {
           curr++;
-          while (*curr != '\n' && curr != source.end()) {
+          while (curr != source.end()) {
+            if (*curr == '\n') {
+              line++;
+              curr++;
+              break;
+            }
             curr++;
           }
         } else {
