@@ -1,9 +1,14 @@
 #include "lex.h"
 #include "types.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iostream>
+#include <iterator>
 #include <sstream>
+
+#if __cplusplus > 201402L
+#endif
 
 using namespace bello;
 
@@ -162,6 +167,14 @@ void Scanner::strings() {
   }
   curr++;
   addToken(TOKEN_TYPE::STRING);
+  auto &str = tokens.back().literal;
+  if (str.size() == 2 && str[0] == '"' && str[1] == '"') {
+    str = std::string();
+  } else if (str.size() > 2 && *str.begin() == '"' && *(str.end() - 1) == '"') {
+    str = str.substr(1, str.size() - 2);
+  } else {
+    // nothing happend
+  }
 }
 
 void Scanner::identifier() {
@@ -175,7 +188,18 @@ void Scanner::identifier() {
       break;
     }
   }
-  addToken(TOKEN_TYPE::IDENTIFIER);
+  TOKEN_TYPE type = TOKEN_TYPE::IDENTIFIER;
+#if __cplusplus > 201402L
+  std::string_view str{start, curr};
+#else
+  bstring str{start, curr};
+#endif
+
+  if (KeyWords.find(str) != KeyWords.end()) {
+    type = KeyWords[str];
+  }
+  addToken(type);
+  // there can be check keyword type;
 }
 
 void Scanner::number() {

@@ -10,9 +10,9 @@
 
 namespace bello {
 
-//void ireport(const int line, bstring where, bstring message);
-//void error(const int line, bstring message);
-//void error(const int line, const char* message);
+// void ireport(const int line, bstring where, bstring message);
+// void error(const int line, bstring message);
+// void error(const int line, const char* message);
 
 enum class TOKEN_TYPE {
   // single charactor token
@@ -84,9 +84,14 @@ struct Token {
 };
 
 static std::map<bstring, TOKEN_TYPE> KeyWords{
-    {"and", TOKEN_TYPE::AND},     {"or", TOKEN_TYPE::OR},
-    {"if", TOKEN_TYPE::IF},       {"else", TOKEN_TYPE::ELSE},
-    {"while", TOKEN_TYPE::WHILE}, {"while", TOKEN_TYPE::WHILE}};
+    {"and", TOKEN_TYPE::AND},       {"or", TOKEN_TYPE::OR},
+    {"if", TOKEN_TYPE::IF},         {"else", TOKEN_TYPE::ELSE},
+    {"while", TOKEN_TYPE::WHILE},   {"class", TOKEN_TYPE::CLASS},
+    {"for", TOKEN_TYPE::FOR},       {"fun", TOKEN_TYPE::FUNC},
+    {"return", TOKEN_TYPE::RETURN}, {"nil", TOKEN_TYPE::NIL},
+    {"not", TOKEN_TYPE::NOT},       {"print", TOKEN_TYPE::PRINT},
+    {"this", TOKEN_TYPE::THIS},     {"true", TOKEN_TYPE::TRUE},
+    {"false", TOKEN_TYPE::FALSE},   {"var", TOKEN_TYPE::VAR}};
 
 class Scanner {
 public:
