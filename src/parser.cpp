@@ -25,6 +25,11 @@ bstring AstPrinter::visitLiteralExpr(AbsExpr &expr) {
   return bp.literal.literal;
 }
 
+
+bstring AstPrinter::visitExprExpr(AbsExpr &expr) {
+    return bstring();
+}
+
 bstring AstPrinter::parenthsize(bstring literal, AbsExpr &lExpr,
                                 AbsExpr &rExpr) {
   bstring str{"("};

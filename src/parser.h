@@ -116,6 +116,10 @@ private:
 inline Unary::Unary(Token &token, std::shared_ptr<AbsExpr> re)
     : operatr(token), rightExpr(re) {}
 
+inline void Unary::accept(AbsVisitor &visitor) {
+  visitor.visitUnaryExpr(*this);
+}
+
 inline bstring Unary::accept(AbsPrinterVisitor &visitor) {
   return visitor.visitBinaryExpr(*this);
 }
@@ -177,6 +181,7 @@ public:
   Literal &operator=(Literal &&) = default;
   Literal &operator=(const Literal &) = default;
   ~Literal() = default;
+  void accept(AbsVisitor &visitor) override;
   bstring accept(AbsPrinterVisitor &visitor) override;
 
 private:
@@ -185,6 +190,10 @@ private:
 };
 
 inline Literal::Literal(const Token &token) : literal(token) {}
+
+inline void Literal::accept(AbsVisitor &visitor) {
+  visitor.visitLiteralExpr(*this);
+}
 
 inline bstring Literal::accept(AbsPrinterVisitor &visitor) {
   return visitor.visitLiteralExpr(*this);
