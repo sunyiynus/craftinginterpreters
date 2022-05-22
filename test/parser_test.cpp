@@ -1,3 +1,4 @@
+#include "catch2/catch_message.hpp"
 #include "lex.h"
 #include "parser.h"
 
@@ -15,7 +16,10 @@ TEST_CASE("Test AbsExpr") {
   auto &tokens = lexer.scanTokens();
   bello::Token tk1{"+", 1, bello::TOKEN_TYPE::PLUS};
   bello::Token tk2{"10", 0, bello::TOKEN_TYPE::NUMBER};
+  bello::Token tk3{"32", 0, bello::TOKEN_TYPE::NUMBER};
   std::shared_ptr<bello::Literal> l1 = std::make_shared<bello::Literal>(tk2);
-  std::shared_ptr<bello::Binary> binary{new bello::Binary()};
-  std::shared_ptr<bello::AbsExpr> expression;
+  std::shared_ptr<bello::Literal> l2 = std::make_shared<bello::Literal>(tk3);
+  std::shared_ptr<bello::Binary> binary{new bello::Binary(l1, tk1, l2)};
+  bello::AstPrinter printer;
+  WARN(printer.print(*binary));
 }
