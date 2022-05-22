@@ -75,6 +75,7 @@ const bstring MULTI = "*";
 } // namespace SToken
 
 struct Token {
+  Token() = default;
   Token(const std::string &litr, bsize_t line, TOKEN_TYPE t);
   bstring literal;
   bstring lexeme;
