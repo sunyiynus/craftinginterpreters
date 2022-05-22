@@ -11,6 +11,7 @@ var c2 = dd*2+d3-d1;
 var b1 = true;
 var b2 = false;
 var b4 = nil;
+var b_4 = nil;
 
 var start = clock();
 print fib(30);
