@@ -1,63 +1,44 @@
 #include "parser.h"
+#include <functional>
 
 using namespace bello;
 
 bstring AstPrinter::print(AbsExpr &expr) { return expr.accept(*this); }
 
 bstring AstPrinter::visitBinaryExpr(AbsExpr &expr) {
-  Binary &bp = dynamic_cast<Binary &>(expr);
-  return parenthsize(bp.operatr.literal, *bp.leftExpr, *bp.rightExpr);
+  auto &bp = dynamic_cast<Expr<BinaryPackage> &>(expr);
+  std::vector<std::reference_wrapper<AbsExpr>> exprs{*bp.data.leftExpr,
+                                                     *bp.data.rightExpr};
+  return parenthsize(bp.data.binaryOp.literal, exprs);
 }
 
 bstring AstPrinter::visitUnaryExpr(AbsExpr &expr) {
-  Unary &bp = dynamic_cast<Unary &>(expr);
-  return parenthsize(bp.operatr.literal, *bp.rightExpr);
+  auto &bp = dynamic_cast<Expr<UnaryPackage> &>(expr);
+  std::vector<std::reference_wrapper<AbsExpr>> exprs{*bp.data.rightExpr};
+  return parenthsize(bp.data.unaryOp.literal, exprs);
 }
 
 bstring AstPrinter::visitGroupExpr(AbsExpr &expr) {
-
-  Group &bp = dynamic_cast<Group &>(expr);
-  return parenthsize(*bp.expr);
+  auto &bp = dynamic_cast<Expr<GroupPackage> &>(expr);
+  std::vector<std::reference_wrapper<AbsExpr>> exprs{*bp.data.expr};
+  return parenthsize("Group", exprs);
 }
 
 bstring AstPrinter::visitLiteralExpr(AbsExpr &expr) {
-  Literal &bp = dynamic_cast<Literal &>(expr);
-  return bp.literal.literal;
+  auto &bp = dynamic_cast<Expr<LiteralPackage> &>(expr);
+  return bp.data.literal.literal;
 }
 
-
-bstring AstPrinter::visitExprExpr(AbsExpr &expr) {
-    return bstring();
-}
-
-bstring AstPrinter::parenthsize(bstring literal, AbsExpr &lExpr,
-                                AbsExpr &rExpr) {
+bstring
+AstPrinter::parenthsize(bstring literal,
+                        std::vector<std::reference_wrapper<AbsExpr>> exprs) {
   bstring str{"("};
-  str += literal + " ";
-  str += lExpr.accept(*this) + " ";
-  str += rExpr.accept(*this) + ")";
-  return str;
-}
+  str += literal;
+  for (auto expr : exprs) {
+    str += " ";
+    str += expr.get().accept(*this);
+  }
+  str += ")";
 
-bstring AstPrinter::parenthsize(bstring literal, AbsExpr &expr) {
-  bstring str{"("};
-  str += literal + " ";
-  str += expr.accept(*this) + ")";
-  return str;
-}
-
-bstring AstPrinter::parenthsize(AbsExpr &expr) {
-  bstring str;
-  str += expr.accept(*this);
-  return str;
-}
-
-bstring AstPrinter::parenthsize(bstring literal) { return literal; }
-
-bstring AstPrinter::parenthsize(bstring literal, AbsExpr &expr, bstring lit) {
-  bstring str;
-  str += literal + " ";
-  str += expr.accept(*this);
-  str += literal + " ";
   return str;
 }
