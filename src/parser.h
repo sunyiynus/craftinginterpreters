@@ -1,163 +1,46 @@
-#ifndef BELLO_SRC_PARSER_H
-#define BELLO_SRC_PARSER_H
+#ifndef PARSER_H
 #include "lex.h"
-#include "types.h"
-
-#include <functional>
-#include <math.h>
-#include <memory>
+#include <list>
 #include <vector>
+
+#include "expr.h"
+
 namespace bello {
 
-class AbsVisitor;
-class AbsPrinterVisitor;
-
-class AbsExpr {
+class Parser : public AbsVisitor {
 public:
-  AbsExpr() = default;
-  AbsExpr(AbsExpr &&) = default;
-  AbsExpr(const AbsExpr &) = default;
-  AbsExpr &operator=(AbsExpr &&) = default;
-  AbsExpr &operator=(const AbsExpr &) = default;
-  ~AbsExpr() = default;
-  //virtual void accept(AbsVisitor &visitor) = 0;
-  virtual bstring accept(AbsPrinterVisitor &visitor) = 0;
+  Parser(const std::list<Token> &tk);
+  Parser(const std::list<Token> &&tk);
+  Parser(Parser &&) = default;
+  Parser(const Parser &) = default;
+  Parser &operator=(Parser &&) = default;
+  Parser &operator=(const Parser &) = default;
+  ~Parser() = default;
+
+    AbsExprPtr expression();
+    AbsExprPtr equality();
+    AbsExprPtr comparison();
+    AbsExprPtr term();
+    AbsExprPtr factor();
+    AbsExprPtr unary();
+    AbsExprPtr primary();
+
+    Token& consume(TOKEN_TYPE type, bstring message);
+
+    Token& previous();
+    Token& peek();
+    bool match(std::vector<TOKEN_TYPE> types);
+    bool check(TOKEN_TYPE type);
+
+    Token& advance();
+    bool isAtEnd() const;
+
 
 private:
+  Parser() = default;
+  std::list<Token> tokens;
+  std::list<Token>::iterator curr;
 };
-
-class AbsPrinterVisitor {
-public:
-  AbsPrinterVisitor() = default;
-  AbsPrinterVisitor(AbsPrinterVisitor &&) = default;
-  AbsPrinterVisitor(const AbsPrinterVisitor &) = default;
-  AbsPrinterVisitor &operator=(AbsPrinterVisitor &&) = default;
-  AbsPrinterVisitor &operator=(const AbsPrinterVisitor &) = default;
-  ~AbsPrinterVisitor() = default;
-  virtual bstring visitBinaryExpr(AbsExpr &expr) = 0;
-  virtual bstring visitUnaryExpr(AbsExpr &expr) = 0;
-  virtual bstring visitGroupExpr(AbsExpr &expr) = 0;
-  virtual bstring visitLiteralExpr(AbsExpr &expr) = 0;
-
-private:
-};
-
-class AbsVisitor {
-public:
-  AbsVisitor() = default;
-  AbsVisitor(AbsVisitor &&) = default;
-  AbsVisitor(const AbsVisitor &) = default;
-  AbsVisitor &operator=(AbsVisitor &&) = default;
-  AbsVisitor &operator=(const AbsVisitor &) = default;
-  ~AbsVisitor() = default;
-  virtual void visitBinaryExpr(AbsExpr &expr) = 0;
-  virtual void visitUnaryExpr(AbsExpr &expr) = 0;
-  virtual void visitGroupExpr(AbsExpr &expr) = 0;
-  virtual void visitLiteralExpr(AbsExpr &expr) = 0;
-
-private:
-};
-
-class AstPrinter;
-
-class AstPrinter : public AbsPrinterVisitor {
-public:
-  AstPrinter() = default;
-  AstPrinter(AstPrinter &&) = default;
-  AstPrinter(const AstPrinter &) = default;
-  AstPrinter &operator=(AstPrinter &&) = default;
-  AstPrinter &operator=(const AstPrinter &) = default;
-  ~AstPrinter() = default;
-
-  bstring print(AbsExpr &expr);
-  bstring visitBinaryExpr(AbsExpr &expr) override;
-  bstring visitUnaryExpr(AbsExpr &expr) override;
-  bstring visitGroupExpr(AbsExpr &expr) override;
-  bstring visitLiteralExpr(AbsExpr &expr) override;
-
-  bstring parenthsize(bstring literal,
-                      std::vector<std::reference_wrapper<AbsExpr>> exprs);
-
-private:
-};
-
-template <typename T> class Expr : public AbsExpr {
-public:
-  Expr() = default;
-  Expr(const T &d);
-  Expr(Expr &&) = default;
-  Expr(const Expr &) = default;
-  Expr &operator=(Expr &&) = default;
-  Expr &operator=(const Expr &) = default;
-  ~Expr() = default;
-  bstring accept(AbsPrinterVisitor &printer) override;
-
-  T data;
-
-private:
-};
-
-template <typename T> inline Expr<T>::Expr(const T &d) : data(d) {}
-
-template <typename T> inline bstring Expr<T>::accept(AbsPrinterVisitor &expr) {
-  return data.acceptPrinter(*this, expr);
-}
-
-struct UnaryPackage {
-  UnaryPackage(const Token &t, std::shared_ptr<AbsExpr> expr);
-  Token unaryOp;
-  std::shared_ptr<AbsExpr> rightExpr;
-  bstring acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer);
-};
-
-inline UnaryPackage::UnaryPackage(const Token &t, std::shared_ptr<AbsExpr> expr)
-    : unaryOp(t), rightExpr(expr) {}
-inline bstring UnaryPackage::acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer) {
-  return printer.visitUnaryExpr(expr);
-}
-
-struct BinaryPackage {
-  BinaryPackage(const Token &t, std::shared_ptr<AbsExpr> le,
-         std::shared_ptr<AbsExpr> re);
-  std::shared_ptr<AbsExpr> leftExpr;
-  Token binaryOp;
-  std::shared_ptr<AbsExpr> rightExpr;
-  bstring acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer);
-};
-
-inline BinaryPackage::BinaryPackage(const Token &t, std::shared_ptr<AbsExpr> le,
-                      std::shared_ptr<AbsExpr> re)
-    : binaryOp(t), leftExpr(le), rightExpr(re) {}
-
-inline bstring BinaryPackage::acceptPrinter(AbsExpr &expr,
-                                     AbsPrinterVisitor &printer) {
-  return printer.visitBinaryExpr(expr);
-}
-
-struct GroupPackage {
-  GroupPackage(std::shared_ptr<AbsExpr> expr);
-  std::shared_ptr<AbsExpr> expr;
-  bstring acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer);
-};
-
-inline GroupPackage::GroupPackage(std::shared_ptr<AbsExpr> e) : expr(e) {}
-inline bstring GroupPackage::acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer) {
-  return printer.visitGroupExpr(expr);
-}
-
-struct LiteralPackage {
-  LiteralPackage(const Token &t);
-  Token literal;
-  bstring acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer);
-};
-
-inline LiteralPackage::LiteralPackage(const Token &t) : literal(t) {}
-
-inline bstring LiteralPackage::acceptPrinter(AbsExpr &expr,
-                                      AbsPrinterVisitor &printer) {
-  return printer.visitLiteralExpr(expr);
-}
 
 } // namespace bello
-
-#endif // BELLO_SRC_PARSER_H
+#endif // !PARSER_H
