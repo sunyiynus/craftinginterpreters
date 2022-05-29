@@ -9,6 +9,9 @@
 #include <vector>
 namespace bello {
 
+class AbsExpr;
+typedef std::shared_ptr<AbsExpr> AbsExprPtr;
+
 class AbsVisitor;
 class AbsPrinterVisitor;
 
@@ -20,7 +23,7 @@ public:
   AbsExpr &operator=(AbsExpr &&) = default;
   AbsExpr &operator=(const AbsExpr &) = default;
   ~AbsExpr() = default;
-  //virtual void accept(AbsVisitor &visitor) = 0;
+  // virtual void accept(AbsVisitor &visitor) = 0;
   virtual bstring accept(AbsPrinterVisitor &visitor) = 0;
 
 private:
@@ -50,15 +53,13 @@ public:
   AbsVisitor &operator=(AbsVisitor &&) = default;
   AbsVisitor &operator=(const AbsVisitor &) = default;
   ~AbsVisitor() = default;
-  virtual void visitBinaryExpr(AbsExpr &expr) = 0;
-  virtual void visitUnaryExpr(AbsExpr &expr) = 0;
-  virtual void visitGroupExpr(AbsExpr &expr) = 0;
-  virtual void visitLiteralExpr(AbsExpr &expr) = 0;
+  virtual AbsExprPtr visitBinaryExpr(AbsExpr &expr) = 0;
+  virtual AbsExprPtr visitUnaryExpr(AbsExpr &expr) = 0;
+  virtual AbsExprPtr visitGroupExpr(AbsExpr &expr) = 0;
+  virtual AbsExprPtr visitLiteralExpr(AbsExpr &expr) = 0;
 
 private:
 };
-
-class AstPrinter;
 
 class AstPrinter : public AbsPrinterVisitor {
 public:
@@ -77,6 +78,22 @@ public:
 
   bstring parenthsize(bstring literal,
                       std::vector<std::reference_wrapper<AbsExpr>> exprs);
+
+private:
+};
+
+class Parser : public AbsVisitor {
+public:
+  Parser() = default;
+  Parser(Parser &&) = default;
+  Parser(const Parser &) = default;
+  Parser &operator=(Parser &&) = default;
+  Parser &operator=(const Parser &) = default;
+  ~Parser() = default;
+  AbsExprPtr visitBinaryExpr(AbsExpr &expr) override;
+  AbsExprPtr visitUnaryExpr(AbsExpr &expr) override;
+  AbsExprPtr visitGroupExpr(AbsExpr &expr) override;
+  AbsExprPtr visitLiteralExpr(AbsExpr &expr) override;
 
 private:
 };
@@ -112,13 +129,15 @@ struct UnaryPackage {
 
 inline UnaryPackage::UnaryPackage(const Token &t, std::shared_ptr<AbsExpr> expr)
     : unaryOp(t), rightExpr(expr) {}
-inline bstring UnaryPackage::acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer) {
+
+inline bstring UnaryPackage::acceptPrinter(AbsExpr &expr,
+                                           AbsPrinterVisitor &printer) {
   return printer.visitUnaryExpr(expr);
 }
 
 struct BinaryPackage {
   BinaryPackage(const Token &t, std::shared_ptr<AbsExpr> le,
-         std::shared_ptr<AbsExpr> re);
+                std::shared_ptr<AbsExpr> re);
   std::shared_ptr<AbsExpr> leftExpr;
   Token binaryOp;
   std::shared_ptr<AbsExpr> rightExpr;
@@ -126,11 +145,11 @@ struct BinaryPackage {
 };
 
 inline BinaryPackage::BinaryPackage(const Token &t, std::shared_ptr<AbsExpr> le,
-                      std::shared_ptr<AbsExpr> re)
+                                    std::shared_ptr<AbsExpr> re)
     : binaryOp(t), leftExpr(le), rightExpr(re) {}
 
 inline bstring BinaryPackage::acceptPrinter(AbsExpr &expr,
-                                     AbsPrinterVisitor &printer) {
+                                            AbsPrinterVisitor &printer) {
   return printer.visitBinaryExpr(expr);
 }
 
@@ -141,7 +160,9 @@ struct GroupPackage {
 };
 
 inline GroupPackage::GroupPackage(std::shared_ptr<AbsExpr> e) : expr(e) {}
-inline bstring GroupPackage::acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer) {
+
+inline bstring GroupPackage::acceptPrinter(AbsExpr &expr,
+                                           AbsPrinterVisitor &printer) {
   return printer.visitGroupExpr(expr);
 }
 
@@ -154,7 +175,7 @@ struct LiteralPackage {
 inline LiteralPackage::LiteralPackage(const Token &t) : literal(t) {}
 
 inline bstring LiteralPackage::acceptPrinter(AbsExpr &expr,
-                                      AbsPrinterVisitor &printer) {
+                                             AbsPrinterVisitor &printer) {
   return printer.visitLiteralExpr(expr);
 }
 

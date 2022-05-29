@@ -42,3 +42,4 @@ AstPrinter::parenthsize(bstring literal,
 
   return str;
 }
+
