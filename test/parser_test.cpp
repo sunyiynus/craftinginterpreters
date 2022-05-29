@@ -1,8 +1,8 @@
-#include "catch2/catch_message.hpp"
 #include "lex.h"
 #include "parser.h"
 
 #include <catch2/catch_test_macros.hpp>
+#include <cstdio>
 #include <memory>
 
 int add(int a, int b) { return a + b; }
@@ -17,9 +17,14 @@ TEST_CASE("Test AbsExpr") {
   bello::Token tk1{"+", 1, bello::TOKEN_TYPE::PLUS};
   bello::Token tk2{"10", 0, bello::TOKEN_TYPE::NUMBER};
   bello::Token tk3{"32", 0, bello::TOKEN_TYPE::NUMBER};
-  std::shared_ptr<bello::Literal> l1 = std::make_shared<bello::Literal>(tk2);
-  std::shared_ptr<bello::Literal> l2 = std::make_shared<bello::Literal>(tk3);
-  std::shared_ptr<bello::Binary> binary{new bello::Binary(l1, tk1, l2)};
+  std::shared_ptr<bello::AbsExpr> l1 =
+      std::make_shared<bello::Expr<bello::LiteralPackage>>(tk2);
+
+  std::shared_ptr<bello::AbsExpr> l2 =
+      std::make_shared<bello::Expr<bello::LiteralPackage>>(bello::LiteralPackage(tk3));
+
+  std::shared_ptr<bello::AbsExpr> b1 =
+      std::make_shared<bello::Expr<bello::BinaryPackage>>(bello::BinaryPackage(tk1, l1, l2));
   bello::AstPrinter printer;
-  WARN(printer.print(*binary));
+  WARN(printer.print(dynamic_cast<bello::AbsExpr&>(*b1)));
 }
