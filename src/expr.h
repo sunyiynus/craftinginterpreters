@@ -82,22 +82,6 @@ public:
 private:
 };
 
-class Parser : public AbsVisitor {
-public:
-  Parser() = default;
-  Parser(Parser &&) = default;
-  Parser(const Parser &) = default;
-  Parser &operator=(Parser &&) = default;
-  Parser &operator=(const Parser &) = default;
-  ~Parser() = default;
-  AbsExprPtr visitBinaryExpr(AbsExpr &expr) override;
-  AbsExprPtr visitUnaryExpr(AbsExpr &expr) override;
-  AbsExprPtr visitGroupExpr(AbsExpr &expr) override;
-  AbsExprPtr visitLiteralExpr(AbsExpr &expr) override;
-
-private:
-};
-
 template <typename T> class Expr : public AbsExpr {
 public:
   Expr() = default;
