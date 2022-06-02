@@ -17,24 +17,23 @@ public:
   Parser &operator=(const Parser &) = default;
   ~Parser() = default;
 
-    AbsExprPtr expression();
-    AbsExprPtr equality();
-    AbsExprPtr comparison();
-    AbsExprPtr term();
-    AbsExprPtr factor();
-    AbsExprPtr unary();
-    AbsExprPtr primary();
+  AbsExprPtr expression();
+  AbsExprPtr equality();
+  AbsExprPtr comparison();
+  AbsExprPtr term();
+  AbsExprPtr factor();
+  AbsExprPtr unary();
+  AbsExprPtr primary();
 
-    Token& consume(TOKEN_TYPE type, bstring message);
+  Token &consume(TOKEN_TYPE type, bstring message);
 
-    Token& previous();
-    Token& peek();
-    bool match(std::vector<TOKEN_TYPE> types);
-    bool check(TOKEN_TYPE type);
+  Token &previous();
+  Token &peek();
+  bool match(std::vector<TOKEN_TYPE> types);
+  bool check(TOKEN_TYPE type);
 
-    Token& advance();
-    bool isAtEnd() const;
-
+  Token &advance();
+  bool isAtEnd() const;
 
 private:
   Parser() = default;
