@@ -1,5 +1,6 @@
 #include "lex.h"
 #include "parser.h"
+#include "expr.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <cstdio>
@@ -38,4 +39,10 @@ TEST_CASE("Test parser") {
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
   bello::AbsExprPtr expr = parser.parse();
+  REQUIRE(expr.get() != nullptr);
+  bello::AstPrinter astPrinter;
+  auto out = astPrinter.print(*expr);
+  REQUIRE_FALSE(out.empty());
+  WARN(out);
+
 }

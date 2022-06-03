@@ -77,7 +77,7 @@ AbsExprPtr Parser::primary() {
     return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
   if (match({TOKEN_TYPE::NIL}))
     return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
-  if (match({TOKEN_TYPE::NUMBER, TOKEN_TYPE::STRING}))
+  if (match({TOKEN_TYPE::NUMBER, TOKEN_TYPE::STRING, TOKEN_TYPE::IDENTIFIER}))
     return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
 
   if (match({TOKEN_TYPE::LEFT_PAREN})) {
