@@ -1,5 +1,6 @@
 #ifndef PARSER_H
 #include "lex.h"
+#include <exception>
 #include <list>
 #include <vector>
 
@@ -7,40 +8,62 @@
 
 namespace bello {
 
-class Parser : public AbsVisitor {
+class SyntaxError : public std::runtime_error {
 public:
-  Parser(const std::list<Token> &tk);
-  Parser(const std::list<Token> &&tk);
+  SyntaxError(const Token &t);
+  SyntaxError(SyntaxError &&) = default;
+  SyntaxError(const SyntaxError &) = default;
+
+private:
+  const Token &tk;
+};
+
+class Parser {
+public:
   Parser(Parser &&) = default;
   Parser(const Parser &) = default;
+  Parser(const std::list<Token> &tk);
+  Parser(std::list<Token> &&tk);
   Parser &operator=(Parser &&) = default;
   Parser &operator=(const Parser &) = default;
   ~Parser() = default;
 
-    AbsExprPtr expression();
-    AbsExprPtr equality();
-    AbsExprPtr comparison();
-    AbsExprPtr term();
-    AbsExprPtr factor();
-    AbsExprPtr unary();
-    AbsExprPtr primary();
+  AbsExprPtr parse();
 
-    Token& consume(TOKEN_TYPE type, bstring message);
+  AbsExprPtr expression();
+  AbsExprPtr equality();
+  AbsExprPtr comparison();
+  AbsExprPtr term();
+  AbsExprPtr factor();
+  AbsExprPtr unary();
+  AbsExprPtr primary();
 
-    Token& previous();
-    Token& peek();
-    bool match(std::vector<TOKEN_TYPE> types);
-    bool check(TOKEN_TYPE type);
+  Token &consume(TOKEN_TYPE type, bstring message);
+  void error(const Token &tk, bstring msg);
+  void synchronize();
 
-    Token& advance();
-    bool isAtEnd() const;
+  Token &previous();
+  Token &peek();
+  bool match(std::vector<TOKEN_TYPE> types);
+  bool check(TOKEN_TYPE type);
 
+  Token &advance();
+  bool isAtEnd() const;
 
 private:
   Parser() = default;
   std::list<Token> tokens;
   std::list<Token>::iterator curr;
 };
+
+inline Parser::Parser(const std::list<Token> &tk) : tokens(tk) {
+  curr = tokens.begin();
+}
+
+inline Parser::Parser(std::list<Token> &&tk) {
+  tokens = std::move(tk);
+  curr = tokens.begin();
+}
 
 } // namespace bello
 #endif // !PARSER_H

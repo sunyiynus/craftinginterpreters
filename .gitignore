@@ -35,3 +35,4 @@ build
 *.exe
 *.out
 *.app
+cmake-build-debug-visual-studio
