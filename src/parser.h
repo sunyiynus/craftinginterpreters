@@ -18,12 +18,12 @@ private:
   const Token &tk;
 };
 
-class Parser : public AbsVisitor {
+class Parser {
 public:
-  Parser(const std::list<Token> &tk);
-  Parser(const std::list<Token> &&tk);
   Parser(Parser &&) = default;
   Parser(const Parser &) = default;
+  Parser(const std::list<Token> &tk);
+  Parser(std::list<Token> &&tk);
   Parser &operator=(Parser &&) = default;
   Parser &operator=(const Parser &) = default;
   ~Parser() = default;
@@ -55,6 +55,15 @@ private:
   std::list<Token> tokens;
   std::list<Token>::iterator curr;
 };
+
+inline Parser::Parser(const std::list<Token> &tk) : tokens(tk) {
+  curr = tokens.begin();
+}
+
+inline Parser::Parser(std::list<Token> &&tk) {
+  tokens = std::move(tk);
+  curr = tokens.begin();
+}
 
 } // namespace bello
 #endif // !PARSER_H

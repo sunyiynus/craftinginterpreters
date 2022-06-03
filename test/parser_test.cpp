@@ -34,6 +34,8 @@ TEST_CASE("Test AbsExpr") {
 TEST_CASE("Test parser") {
   std::string express = " a + b + c * (5 -1)";
   bello::Scanner lexer{express};
-  bello::Parser parser{lexer.scanTokens()};
+  auto & tk = lexer.scanTokens();
+  REQUIRE(tk.size() > 0);
+  bello::Parser parser{tk};
   bello::AbsExprPtr expr = parser.parse();
 }

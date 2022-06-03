@@ -105,13 +105,15 @@ template <typename T> inline bstring Expr<T>::accept(AbsPrinterVisitor &expr) {
 }
 
 struct UnaryPackage {
-  UnaryPackage(const Token &t, std::shared_ptr<AbsExpr> expr);
+  UnaryPackage(const UnaryPackage& up) = default;
+  UnaryPackage(const Token &t, const std::shared_ptr<AbsExpr> expr);
   Token unaryOp;
   std::shared_ptr<AbsExpr> rightExpr;
   bstring acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer);
 };
 
-inline UnaryPackage::UnaryPackage(const Token &t, std::shared_ptr<AbsExpr> expr)
+inline UnaryPackage::UnaryPackage(const Token &t,
+                                  const std::shared_ptr<AbsExpr> expr)
     : unaryOp(t), rightExpr(expr) {}
 
 inline bstring UnaryPackage::acceptPrinter(AbsExpr &expr,
@@ -120,16 +122,18 @@ inline bstring UnaryPackage::acceptPrinter(AbsExpr &expr,
 }
 
 struct BinaryPackage {
-  BinaryPackage(const Token &t, std::shared_ptr<AbsExpr> le,
-                std::shared_ptr<AbsExpr> re);
+  BinaryPackage(const BinaryPackage& bp) = default;
+  BinaryPackage(const Token &t, const std::shared_ptr<AbsExpr> le,
+                const std::shared_ptr<AbsExpr> re);
   std::shared_ptr<AbsExpr> leftExpr;
   Token binaryOp;
   std::shared_ptr<AbsExpr> rightExpr;
   bstring acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer);
 };
 
-inline BinaryPackage::BinaryPackage(const Token &t, std::shared_ptr<AbsExpr> le,
-                                    std::shared_ptr<AbsExpr> re)
+inline BinaryPackage::BinaryPackage(const Token &t,
+                                    const std::shared_ptr<AbsExpr> le,
+                                    const std::shared_ptr<AbsExpr> re)
     : binaryOp(t), leftExpr(le), rightExpr(re) {}
 
 inline bstring BinaryPackage::acceptPrinter(AbsExpr &expr,
@@ -138,12 +142,12 @@ inline bstring BinaryPackage::acceptPrinter(AbsExpr &expr,
 }
 
 struct GroupPackage {
-  GroupPackage(std::shared_ptr<AbsExpr> expr);
+  GroupPackage(const std::shared_ptr<AbsExpr> expr);
   std::shared_ptr<AbsExpr> expr;
   bstring acceptPrinter(AbsExpr &expr, AbsPrinterVisitor &printer);
 };
 
-inline GroupPackage::GroupPackage(std::shared_ptr<AbsExpr> e) : expr(e) {}
+inline GroupPackage::GroupPackage(const std::shared_ptr<AbsExpr> e) : expr(e) {}
 
 inline bstring GroupPackage::acceptPrinter(AbsExpr &expr,
                                            AbsPrinterVisitor &printer) {

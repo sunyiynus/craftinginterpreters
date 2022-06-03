@@ -1,21 +1,14 @@
 #include "parser.h"
 #include "expr.h"
 #include "lex.h"
+#include "errorreport.h"
 #include <list>
 #include <memory>
 
 using namespace bello;
 
 SyntaxError::SyntaxError(const Token &t)
-    : std::runtime_error(t.literal), tk(t) {}
-
-Parser::Parser(const std::list<Token> &tk) : tokens(tk) {
-  curr = tokens.begin();
-}
-
-Parser::Parser(const std::list<Token> &&tk) : tokens(std::move(tk)) {
-  curr = tokens.begin();
-}
+    : std::runtime_error("Error Syntax"), tk(t) {}
 
 AbsExprPtr Parser::expression() { return equality(); }
 
@@ -26,7 +19,8 @@ AbsExprPtr Parser::equality() {
                                        TOKEN_TYPE::NOT_EQUAL})) {
     Token operater = previous();
     AbsExprPtr right = comparison();
-    expr = std::make_shared<Expr<BinaryPackage>>(operater, expr, right);
+    expr = std::make_shared<Expr<BinaryPackage>>(
+        BinaryPackage(operater, expr, right));
   }
 
   return expr;
@@ -38,7 +32,8 @@ AbsExprPtr Parser::comparison() {
                 TOKEN_TYPE::LESS, TOKEN_TYPE::LESS_EQUAL})) {
     Token operater = previous();
     AbsExprPtr right = term();
-    expr = std::make_shared<Expr<BinaryPackage>>(operater, expr, right);
+    expr = std::make_shared<Expr<BinaryPackage>>(
+        BinaryPackage(operater, expr, right));
   }
   return expr;
 }
@@ -48,7 +43,8 @@ AbsExprPtr Parser::term() {
   while (match({TOKEN_TYPE::MINUS, TOKEN_TYPE::PLUS})) {
     Token operater = previous();
     AbsExprPtr right = factor();
-    expr = std::make_shared<Expr<BinaryPackage>>(operater, expr, right);
+    expr = std::make_shared<Expr<BinaryPackage>>(
+        BinaryPackage(operater, expr, right));
   }
   return expr;
 }
@@ -58,7 +54,8 @@ AbsExprPtr Parser::factor() {
   while (match({TOKEN_TYPE::STAR, TOKEN_TYPE::SLASH})) {
     Token operater = previous();
     AbsExprPtr right = unary();
-    expr = std::make_shared<Expr<BinaryPackage>>(operater, expr, right);
+    expr = std::make_shared<Expr<BinaryPackage>>(
+        BinaryPackage(operater, expr, right));
   }
   return expr;
 }
@@ -68,32 +65,33 @@ AbsExprPtr Parser::unary() {
   if (match({TOKEN_TYPE::NOT, TOKEN_TYPE::MINUS})) {
     Token operater = previous();
     AbsExprPtr right = unary();
-    return std::make_shared<Expr<UnaryPackage>>(operater, right);
+    return std::make_shared<Expr<UnaryPackage>>(UnaryPackage(operater, right));
   }
   return primary();
 }
 
 AbsExprPtr Parser::primary() {
   if (match({TOKEN_TYPE::FALSE}))
-    return std::make_shared<Expr<LiteralPackage>>(previous());
+    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
   if (match({TOKEN_TYPE::TRUE}))
-    return std::make_shared<Expr<LiteralPackage>>(previous());
+    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
   if (match({TOKEN_TYPE::NIL}))
-    return std::make_shared<Expr<LiteralPackage>>(previous());
+    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
   if (match({TOKEN_TYPE::NUMBER, TOKEN_TYPE::STRING}))
-    return std::make_shared<Expr<LiteralPackage>>(previous());
+    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
 
   if (match({TOKEN_TYPE::LEFT_PAREN})) {
     AbsExprPtr expr = expression();
     consume(TOKEN_TYPE::RIGHT_PAREN, "Expect ')' after expression.");
-    return std::make_shared<Expr<GroupPackage>>(expr);
+    return std::make_shared<Expr<GroupPackage>>(GroupPackage(expr));
   }
 }
 
 Token &Parser::consume(TOKEN_TYPE type, bstring message) {
   if (check(type))
     return advance();
-  throw SyntaxError(peek());
+  error(peek(), message);
+  return peek();
   // throw b;
 }
 
@@ -149,3 +147,22 @@ bool Parser::check(TOKEN_TYPE type) {
 Token &Parser::advance() { return *(++curr); }
 
 bool Parser::isAtEnd() const { return curr == tokens.end(); }
+
+void Parser::error(const Token &tk, bstring msg) {
+  if (tk.type == TOKEN_TYPE::EOFI) {
+    ErrorReport::reporter().error(tk, " at end" + msg);
+  } else {
+    ErrorReport::reporter().error(tk, msg);
+  }
+  throw SyntaxError(tk);
+}
+
+AbsExprPtr Parser::parse() {
+  AbsExprPtr expr;
+  try {
+    expr = expression();
+  } catch (SyntaxError &serror) {
+    return expr;
+  }
+  return expr;
+}
