@@ -1,6 +1,6 @@
+#include "expr.h"
 #include "lex.h"
 #include "parser.h"
-#include "expr.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <cstdio>
@@ -35,7 +35,7 @@ TEST_CASE("Test AbsExpr") {
 TEST_CASE("Test parser") {
   std::string express = " a + b + c * (5 -1)";
   bello::Scanner lexer{express};
-  auto & tk = lexer.scanTokens();
+  auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
   bello::AbsExprPtr expr = parser.parse();
@@ -44,5 +44,14 @@ TEST_CASE("Test parser") {
   auto out = astPrinter.print(*expr);
   REQUIRE_FALSE(out.empty());
   WARN(out);
+}
 
+TEST_CASE("Test parser - error testing") {
+  std::string express = " a + b + c * (5 -1";
+  bello::Scanner lexer{express};
+  auto &tk = lexer.scanTokens();
+  REQUIRE(tk.size() > 0);
+  bello::Parser parser{tk};
+  bello::AbsExprPtr expr = parser.parse();
+  REQUIRE(expr.get() == nullptr);
 }

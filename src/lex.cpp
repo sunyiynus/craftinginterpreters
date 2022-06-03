@@ -207,6 +207,10 @@ void Scanner::number() {
   // 0b01001
   // 0xFFFF
   // 0o7777 ?
+  if (curr == source.end()) {
+    addToken(TOKEN_TYPE::NUMBER);
+    return;
+  }
   while (curr != source.end()) {
     if (std::isalnum(*curr) || *curr == '.') {
       curr++;
