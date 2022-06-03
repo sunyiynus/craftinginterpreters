@@ -21,10 +21,19 @@ TEST_CASE("Test AbsExpr") {
       std::make_shared<bello::Expr<bello::LiteralPackage>>(tk2);
 
   std::shared_ptr<bello::AbsExpr> l2 =
-      std::make_shared<bello::Expr<bello::LiteralPackage>>(bello::LiteralPackage(tk3));
+      std::make_shared<bello::Expr<bello::LiteralPackage>>(
+          bello::LiteralPackage(tk3));
 
   std::shared_ptr<bello::AbsExpr> b1 =
-      std::make_shared<bello::Expr<bello::BinaryPackage>>(bello::BinaryPackage(tk1, l1, l2));
+      std::make_shared<bello::Expr<bello::BinaryPackage>>(
+          bello::BinaryPackage(tk1, l1, l2));
   bello::AstPrinter printer;
-  WARN(printer.print(dynamic_cast<bello::AbsExpr&>(*b1)));
+  WARN(printer.print(dynamic_cast<bello::AbsExpr &>(*b1)));
+}
+
+TEST_CASE("Test parser") {
+  std::string express = " a + b + c * (5 -1)";
+  bello::Scanner lexer{express};
+  bello::Parser parser{lexer.scanTokens()};
+  bello::AbsExprPtr expr = parser.parse();
 }

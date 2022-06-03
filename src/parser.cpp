@@ -6,6 +6,9 @@
 
 using namespace bello;
 
+SyntaxError::SyntaxError(const Token &t)
+    : std::runtime_error(t.literal), tk(t) {}
+
 Parser::Parser(const std::list<Token> &tk) : tokens(tk) {
   curr = tokens.begin();
 }
@@ -88,9 +91,32 @@ AbsExprPtr Parser::primary() {
 }
 
 Token &Parser::consume(TOKEN_TYPE type, bstring message) {
-  if (check(TOKEN_TYPE::RIGHT_PAREN))
+  if (check(type))
     return advance();
+  throw SyntaxError(peek());
   // throw b;
+}
+
+void Parser::synchronize() {
+  advance();
+
+  while (isAtEnd()) {
+    if (previous().type == TOKEN_TYPE::SEMICOLON)
+      return;
+
+    switch (peek().type) {
+    case TOKEN_TYPE::FOR:
+    case TOKEN_TYPE::WHILE:
+    case TOKEN_TYPE::IF:
+    case TOKEN_TYPE::CLASS:
+    case TOKEN_TYPE::FUNC:
+    case TOKEN_TYPE::PRINT:
+    case TOKEN_TYPE::VAR:
+      return;
+    }
+
+    advance();
+  }
 }
 
 Token &Parser::previous() {

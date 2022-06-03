@@ -1,11 +1,22 @@
 #ifndef PARSER_H
 #include "lex.h"
+#include <exception>
 #include <list>
 #include <vector>
 
 #include "expr.h"
 
 namespace bello {
+
+class SyntaxError : public std::runtime_error {
+public:
+  SyntaxError(const Token &t);
+  SyntaxError(SyntaxError &&) = default;
+  SyntaxError(const SyntaxError &) = default;
+
+private:
+  const Token &tk;
+};
 
 class Parser : public AbsVisitor {
 public:
@@ -17,6 +28,8 @@ public:
   Parser &operator=(const Parser &) = default;
   ~Parser() = default;
 
+  AbsExprPtr parse();
+
   AbsExprPtr expression();
   AbsExprPtr equality();
   AbsExprPtr comparison();
@@ -26,6 +39,8 @@ public:
   AbsExprPtr primary();
 
   Token &consume(TOKEN_TYPE type, bstring message);
+  void error(const Token &tk, bstring msg);
+  void synchronize();
 
   Token &previous();
   Token &peek();
