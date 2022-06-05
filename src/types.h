@@ -6,6 +6,7 @@
 #include <string>
 
 typedef std::string bstring;
+typedef std::wstring  bwstring;
 typedef std::size_t bsize_t;
 
 

@@ -1,10 +1,6 @@
-//
-// Created by sunyi on 2022/6/3.
-//
-
 #include "errorreport.h"
 
-const char *LevelStr[] = { "", "error", "warning", "note"};
+const char *LevelStr[] = {"", "error", "warning", "note"};
 
 void bello::ErrorReport::print(bello::MsgLevel mlv, const bello::Token &tk,
                                bstring msg) {
@@ -20,9 +16,11 @@ bello::ErrorReport &bello::ErrorReport::reporter() {
   static ErrorReport reporter;
   return reporter;
 }
+
 void bello::ErrorReport::warning(const bello::Token &tk, bstring msg) {
   print(MsgLevel::WARNING, tk, msg);
 }
+
 void bello::ErrorReport::note(const bello::Token &tk, bstring msg) {
   print(MsgLevel::NOTE, tk, msg);
 }
