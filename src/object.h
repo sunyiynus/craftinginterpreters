@@ -28,7 +28,7 @@ inline Object::Object(const bstring &t) : type(t) {}
 typedef std::shared_ptr<Object> ObjectPtr;
 
 template <typename T, typename... Args>
-std::shared_ptr<T> MakeObject(Args &&..._Args) {
+std::shared_ptr<T> MakeObject(Args &&... _Args) {
   return std::make_shared<T>(_Args...);
 }
 
@@ -50,30 +50,6 @@ struct Number : public Object {
   double value;
 };
 
-inline std::shared_ptr<Boolean> operator==(const Number &a, const Number &b) {
-  return MakeObject<Boolean>(a.value == b.value);
-}
-
-inline std::shared_ptr<Boolean> operator!=(const Number &a, const Number &b) {
-  return MakeObject<Boolean>(a.value != b.value);
-}
-
-inline std::shared_ptr<Boolean> operator>=(const Number &a, const Number &b) {
-  return MakeObject<Boolean>(a.value >= b.value);
-}
-
-inline std::shared_ptr<Boolean> operator<=(const Number &a, const Number &b) {
-  return MakeObject<Boolean>(a.value <= b.value);
-}
-
-inline std::shared_ptr<Boolean> operator>(const Number &a, const Number &b) {
-  return MakeObject<Boolean>(a.value > b.value);
-}
-
-inline std::shared_ptr<Boolean> operator<(const Number &a, const Number &b) {
-  return MakeObject<Boolean>(a.value < b.value);
-}
-
 inline Number::Number(const double v) : value(v), Object("Number") {}
 
 struct String : public Object {
@@ -84,30 +60,6 @@ struct String : public Object {
 };
 
 inline String::String(const bstring &str) : value(str), Object("String") {}
-
-inline std::shared_ptr<Boolean> operator>=(const String &a, const String &b) {
-  return MakeObject<Boolean>(a.value >= b.value);
-}
-
-inline std::shared_ptr<Boolean> operator<=(const String &a, const String &b) {
-  return MakeObject<Boolean>(a.value <= b.value);
-}
-
-inline std::shared_ptr<Boolean> operator==(const String &a, const String &b) {
-  return MakeObject<Boolean>(a.value == b.value);
-}
-
-inline std::shared_ptr<Boolean> operator!=(const String &a, const String &b) {
-  return MakeObject<Boolean>(a.value != b.value);
-}
-
-inline std::shared_ptr<Boolean> operator>(const String &a, const String &b) {
-  return MakeObject<Boolean>(a.value > b.value);
-}
-
-inline std::shared_ptr<Boolean> operator<(const String &a, const String &b) {
-  return MakeObject<Boolean>(a.value < b.value);
-}
 
 inline std::shared_ptr<Number> String::toNumber() const {
   double val = 0;

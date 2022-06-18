@@ -85,6 +85,7 @@ AbsExprPtr Parser::primary() {
     consume(TOKEN_TYPE::RIGHT_PAREN, "Expect ')' after expression.");
     return std::make_shared<Expr<GroupPackage>>(GroupPackage(expr));
   }
+  //return nullptr;
 }
 
 Token &Parser::consume(TOKEN_TYPE type, bstring message) {

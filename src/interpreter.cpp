@@ -62,6 +62,12 @@ ObjectPtr Interpreter::visitBinaryExpr(AbsExpr &expr) {
     auto origLOp = static_cast<const Number *>(loprands.get());
     auto origROp = static_cast<const Number *>(roprands.get());
 
+    if (isComparsionOps(origExpr.data.binaryOp.type)) {
+      auto res = comparsion<decltype(origLOp->value)>(
+          origLOp->value, origROp->value, origExpr.data.binaryOp.type);
+      return MakeObject<Boolean>(res);
+    }
+
     return MakeObject<Number>(ops(origLOp->value, origROp->value));
 
   } else if (loprands->type == NumberTypeStr &&
@@ -91,6 +97,14 @@ ObjectPtr Interpreter::visitBinaryExpr(AbsExpr &expr) {
     auto origROp = static_cast<const String *>(roprands.get());
     auto value = origLOp->toNumber();
     return MakeObject<String>(origLOp->value + origROp->value);
+
+  } else if (loprands->type == BooleanTypeStr &&
+             roprands->type == BooleanTypeStr) {
+    auto origLOp = static_cast<const Boolean *>(loprands.get());
+    auto origROp = static_cast<const Boolean *>(roprands.get());
+
+    return MakeObject<Boolean>(comparsion(origLOp->value, origROp->value,
+                                          origExpr.data.binaryOp.type));
   } else {
     // TODO identifer operation
     // TODO more can convert to double
@@ -128,12 +142,12 @@ std::shared_ptr<Boolean> Interpreter::comparsion(ObjectPtr a, ObjectPtr b,
     MakeObject<Boolean>(
         comparsion<decltype(origA->value)>(origA->value, origB->value, type));
     */
-    return comparsion(*origA, *origB, type);
+    return MakeObject<Boolean>(comparsion(origA->value, origB->value, type));
 
   } else if (a->type == StringTypeStr && b->type == StringTypeStr) {
     auto origA = static_cast<String *>(a.get());
     auto origB = static_cast<String *>(b.get());
-    return comparsion(*origA, *origB, type);
+    return MakeObject<Boolean>(comparsion(origA->value, origB->value, type));
 
   } else if (a->type == StringTypeStr && b->type == NumberTypeStr) {
   }
@@ -146,8 +160,15 @@ bool Interpreter::isArithmeticOps(TOKEN_TYPE type) {
 }
 
 bool Interpreter::isComparsionOps(TOKEN_TYPE type) {
-  std::set<TOKEN_TYPE> types{TOKEN_TYPE::GREATER, TOKEN_TYPE::GREATER_EQUAL,
-                             TOKEN_TYPE::LESS, TOKEN_TYPE::LESS_EQUAL,
-                             TOKEN_TYPE::NOT_EQUAL};
+  std::set<TOKEN_TYPE> types{
+      TOKEN_TYPE::GREATER,   TOKEN_TYPE::GREATER_EQUAL,
+      TOKEN_TYPE::LESS,      TOKEN_TYPE::LESS_EQUAL,
+      TOKEN_TYPE::NOT_EQUAL, TOKEN_TYPE::EQUAL_EQUAL,
+  };
+  return types.find(type) != types.end();
+}
+
+bool Interpreter::isBinaryOps(TOKEN_TYPE type) {
+  std::set<TOKEN_TYPE> types{TOKEN_TYPE::AND, TOKEN_TYPE::OR, TOKEN_TYPE::NOT};
   return types.find(type) != types.end();
 }
