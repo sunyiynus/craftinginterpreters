@@ -1,3 +1,4 @@
+#include "statement.h"
 #ifndef PARSER_H
 #include "lex.h"
 #include <exception>
@@ -29,6 +30,10 @@ public:
   ~Parser() = default;
 
   AbsExprPtr parse();
+  void parseStmts();
+  AbsStmtPtr statement();
+  AbsStmtPtr printStmt();
+  AbsStmtPtr exprStmt();
 
   AbsExprPtr expression();
   AbsExprPtr equality();

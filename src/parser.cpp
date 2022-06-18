@@ -2,6 +2,7 @@
 #include "errorreport.h"
 #include "expr.h"
 #include "lex.h"
+#include "statement.h"
 #include <list>
 #include <memory>
 
@@ -9,6 +10,32 @@ using namespace bello;
 
 SyntaxError::SyntaxError(const Token &t)
     : std::runtime_error("Error Syntax"), tk(t) {}
+
+void Parser::parseStmts() {
+  std::vector<AbsStmtPtr> stmts;
+  for (; !isAtEnd();) {
+    stmts.push_back(statement());
+  }
+}
+
+AbsStmtPtr Parser::statement() {
+  if (match({TOKEN_TYPE::PRINT}))
+    return printStmt();
+
+  return exprStmt();
+}
+
+AbsStmtPtr Parser::printStmt() {
+  AbsExprPtr expr = expression();
+  consume(TOKEN_TYPE::SEMICOLON, "Expect ';' after value");
+  return std::make_shared<PrintStmt>(expr);
+}
+
+AbsStmtPtr Parser::exprStmt() {
+  AbsExprPtr expr = expression();
+  consume(TOKEN_TYPE::SEMICOLON, "Expect ';' after value");
+  return std::make_shared<ExprStmt>(expr);
+}
 
 AbsExprPtr Parser::expression() { return equality(); }
 
@@ -85,7 +112,7 @@ AbsExprPtr Parser::primary() {
     consume(TOKEN_TYPE::RIGHT_PAREN, "Expect ')' after expression.");
     return std::make_shared<Expr<GroupPackage>>(GroupPackage(expr));
   }
-  //return nullptr;
+  // return nullptr;
 }
 
 Token &Parser::consume(TOKEN_TYPE type, bstring message) {
