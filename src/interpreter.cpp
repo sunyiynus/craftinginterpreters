@@ -3,10 +3,12 @@
 #include "lex.h"
 #include "object.h"
 
-#include <__functional/bind.h>
+#include <functional>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 using namespace bello;
@@ -49,13 +51,22 @@ ObjectPtr Interpreter::visitBinaryExpr(AbsExpr &expr) {
   auto roprands = origExpr.data.rightExpr->accept(*this);
 
   auto ops =
-      std::bind(&Interpreter::orithmetic<double>, this, std::placeholders::_1,
+      std::bind(&Interpreter::arithmetic<double>, this, std::placeholders::_1,
                 std::placeholders::_2, origExpr.data.binaryOp.type);
+
+  if (isComparsionOps(origExpr.data.binaryOp.type)) {
+  }
 
   if (loprands->type == NumberTypeStr && roprands->type == NumberTypeStr) {
 
     auto origLOp = static_cast<const Number *>(loprands.get());
     auto origROp = static_cast<const Number *>(roprands.get());
+
+    if (isComparsionOps(origExpr.data.binaryOp.type)) {
+      auto res = comparsion<decltype(origLOp->value)>(
+          origLOp->value, origROp->value, origExpr.data.binaryOp.type);
+      return MakeObject<Boolean>(res);
+    }
 
     return MakeObject<Number>(ops(origLOp->value, origROp->value));
 
@@ -80,7 +91,20 @@ ObjectPtr Interpreter::visitBinaryExpr(AbsExpr &expr) {
     } else {
       return MakeObject<Number>(ops(value->value, origROp->value));
     }
+  } else if (loprands->type == StringTypeStr &&
+             roprands->type == StringTypeStr) {
+    auto origLOp = static_cast<const String *>(loprands.get());
+    auto origROp = static_cast<const String *>(roprands.get());
+    auto value = origLOp->toNumber();
+    return MakeObject<String>(origLOp->value + origROp->value);
 
+  } else if (loprands->type == BooleanTypeStr &&
+             roprands->type == BooleanTypeStr) {
+    auto origLOp = static_cast<const Boolean *>(loprands.get());
+    auto origROp = static_cast<const Boolean *>(roprands.get());
+
+    return MakeObject<Boolean>(comparsion(origLOp->value, origROp->value,
+                                          origExpr.data.binaryOp.type));
   } else {
     // TODO identifer operation
     // TODO more can convert to double
@@ -107,4 +131,44 @@ ObjectPtr Interpreter::visitLiteralExpr(AbsExpr &expr) {
   } else if (origExpr.data.literal.type == TOKEN_TYPE::NIL) {
     return MakeObject<Nil>();
   }
+}
+
+std::shared_ptr<Boolean> Interpreter::comparsion(ObjectPtr a, ObjectPtr b,
+                                                 TOKEN_TYPE type) {
+  if (a->type == NumberTypeStr && b->type == NumberTypeStr) {
+    auto origA = static_cast<Number *>(a.get());
+    auto origB = static_cast<Number *>(b.get());
+    /*
+    MakeObject<Boolean>(
+        comparsion<decltype(origA->value)>(origA->value, origB->value, type));
+    */
+    return MakeObject<Boolean>(comparsion(origA->value, origB->value, type));
+
+  } else if (a->type == StringTypeStr && b->type == StringTypeStr) {
+    auto origA = static_cast<String *>(a.get());
+    auto origB = static_cast<String *>(b.get());
+    return MakeObject<Boolean>(comparsion(origA->value, origB->value, type));
+
+  } else if (a->type == StringTypeStr && b->type == NumberTypeStr) {
+  }
+}
+
+bool Interpreter::isArithmeticOps(TOKEN_TYPE type) {
+  std::set<TOKEN_TYPE> types{TOKEN_TYPE::PLUS, TOKEN_TYPE::MINUS,
+                             TOKEN_TYPE::STAR, TOKEN_TYPE::SLASH};
+  return types.find(type) != types.end();
+}
+
+bool Interpreter::isComparsionOps(TOKEN_TYPE type) {
+  std::set<TOKEN_TYPE> types{
+      TOKEN_TYPE::GREATER,   TOKEN_TYPE::GREATER_EQUAL,
+      TOKEN_TYPE::LESS,      TOKEN_TYPE::LESS_EQUAL,
+      TOKEN_TYPE::NOT_EQUAL, TOKEN_TYPE::EQUAL_EQUAL,
+  };
+  return types.find(type) != types.end();
+}
+
+bool Interpreter::isBinaryOps(TOKEN_TYPE type) {
+  std::set<TOKEN_TYPE> types{TOKEN_TYPE::AND, TOKEN_TYPE::OR, TOKEN_TYPE::NOT};
+  return types.find(type) != types.end();
 }

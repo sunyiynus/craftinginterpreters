@@ -28,8 +28,21 @@ inline Object::Object(const bstring &t) : type(t) {}
 typedef std::shared_ptr<Object> ObjectPtr;
 
 template <typename T, typename... Args>
-std::shared_ptr<T> MakeObject(Args &&..._Args) {
+std::shared_ptr<T> MakeObject(Args &&... _Args) {
   return std::make_shared<T>(_Args...);
+}
+
+struct Boolean : public Object {
+  explicit Boolean(const bool v);
+
+  bool value;
+  std::shared_ptr<Boolean> toNumber() const;
+};
+
+inline Boolean::Boolean(const bool v) : value(v), Object("Boolean") {}
+
+inline std::shared_ptr<Boolean> operator==(const Boolean &a, const Boolean &b) {
+  return MakeObject<Boolean>(a.value == b.value);
 }
 
 struct Number : public Object {
@@ -40,7 +53,7 @@ struct Number : public Object {
 inline Number::Number(const double v) : value(v), Object("Number") {}
 
 struct String : public Object {
-  String(const bstring &str);
+  explicit String(const bstring &str);
   // bwstring value;
   bstring value;
   std::shared_ptr<Number> toNumber() const;
@@ -59,14 +72,6 @@ inline std::shared_ptr<Number> String::toNumber() const {
   }
   return MakeObject<Number>(val);
 }
-
-struct Boolean : public Object {
-  Boolean(const bool v);
-  bool value;
-  Number toNumber() const;
-};
-
-inline Boolean::Boolean(const bool v) : value(v), Object("Boolean") {}
 
 struct Nil : public Object {
   Nil(void *v = nullptr);

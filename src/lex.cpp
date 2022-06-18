@@ -107,6 +107,9 @@ void Scanner::scanToken(std::string &source) {
       case ';':
         addToken(TOKEN_TYPE::SEMICOLON);
         break;
+      case '!':
+        addToken((match("=") ? TOKEN_TYPE::NOT_EQUAL: TOKEN_TYPE::NOT));
+        break;
 
       case '\t':
       case '\r':
