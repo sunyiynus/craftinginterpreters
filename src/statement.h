@@ -28,6 +28,7 @@ typedef std::shared_ptr<AbsStmt> AbsStmtPtr;
 class PrintStmt : public AbsStmt {
 public:
   PrintStmt() = default;
+  PrintStmt(AbsExprPtr e);
   PrintStmt(PrintStmt &&) = default;
   PrintStmt(const PrintStmt &) = default;
   PrintStmt &operator=(PrintStmt &&) = default;
@@ -42,9 +43,12 @@ private:
   Token comma;
 };
 
+inline PrintStmt::PrintStmt(AbsExprPtr e) : expr(e) {}
+
 class ExprStmt : public AbsStmt {
 public:
   ExprStmt() = default;
+  ExprStmt(AbsExprPtr e);
   ExprStmt(ExprStmt &&) = default;
   ExprStmt(const ExprStmt &) = default;
   ExprStmt &operator=(ExprStmt &&) = default;
@@ -57,6 +61,8 @@ private:
   AbsExprPtr expr;
   Token comma;
 };
+
+inline ExprStmt::ExprStmt(AbsExprPtr e) : expr(e) {}
 
 } // namespace bello
 

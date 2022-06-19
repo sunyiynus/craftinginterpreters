@@ -1,3 +1,4 @@
+#include "catch2/catch_message.hpp"
 #include "expr.h"
 #include "lex.h"
 #include "parser.h"
@@ -38,7 +39,7 @@ TEST_CASE("Test parser") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr = parser.expression();
   REQUIRE(expr.get() != nullptr);
   bello::AstPrinter astPrinter;
   auto out = astPrinter.print(*expr);
@@ -52,6 +53,21 @@ TEST_CASE("Test parser - error testing") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr;
+  try {
+    expr = parser.expression();
+  } catch (bello::SyntaxError& error) {
+    WARN(error.what());
+  }
   REQUIRE(expr.get() == nullptr);
+}
+
+TEST_CASE("Test parser - statement testing") {
+  std::string express = " a + b + c * (5 -1);";
+  bello::Scanner lexer{express};
+  auto &tk = lexer.scanTokens();
+  REQUIRE(tk.size() > 0);
+  bello::Parser parser{tk};
+  auto stmt = parser.parseStmts();
+  REQUIRE(stmt.size() == 1);
 }

@@ -11,11 +11,15 @@ using namespace bello;
 SyntaxError::SyntaxError(const Token &t)
     : std::runtime_error("Error Syntax"), tk(t) {}
 
-void Parser::parseStmts() {
+std::vector<AbsStmtPtr> &Parser::parseStmts() {
   std::vector<AbsStmtPtr> stmts;
   for (; !isAtEnd();) {
-    stmts.push_back(statement());
+    auto stmttmp = statement();
+    stmts.push_back(stmttmp);
   }
+
+  statements = stmts;
+  return statements;
 }
 
 AbsStmtPtr Parser::statement() {

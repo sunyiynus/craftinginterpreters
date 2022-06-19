@@ -15,7 +15,7 @@ TEST_CASE("Interpreter testing - normal") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr = parser.expression();
   REQUIRE(expr.get() != nullptr);
   bello::AstPrinter astPrinter;
   auto out = astPrinter.print(*expr);
@@ -35,7 +35,7 @@ TEST_CASE("Interpreter testing - normal - 01") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr = parser.expression();
   REQUIRE(expr.get() != nullptr);
   bello::AstPrinter astPrinter;
   auto out = astPrinter.print(*expr);
@@ -55,7 +55,7 @@ TEST_CASE("Interpreter testing - normal - 02") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr = parser.expression();
   REQUIRE(expr.get() != nullptr);
   bello::AstPrinter astPrinter;
   auto out = astPrinter.print(*expr);
@@ -75,7 +75,7 @@ TEST_CASE("Interpreter testing - normal - 03 - comparsion") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr = parser.expression();
   REQUIRE(expr.get() != nullptr);
   bello::AstPrinter astPrinter;
   auto out = astPrinter.print(*expr);
@@ -95,7 +95,7 @@ TEST_CASE("Interpreter testing - normal - 04 - comparsion") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr = parser.expression();
   REQUIRE(expr.get() != nullptr);
   bello::AstPrinter astPrinter;
   auto out = astPrinter.print(*expr);
@@ -115,7 +115,7 @@ TEST_CASE("Interpreter testing - normal - 05 - comparsion") {
   auto &tk = lexer.scanTokens();
   REQUIRE(tk.size() > 0);
   bello::Parser parser{tk};
-  bello::AbsExprPtr expr = parser.parse();
+  bello::AbsExprPtr expr = parser.expression();
   REQUIRE(expr.get() != nullptr);
   bello::AstPrinter astPrinter;
   auto out = astPrinter.print(*expr);

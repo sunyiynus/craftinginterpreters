@@ -30,7 +30,7 @@ public:
   ~Parser() = default;
 
   AbsExprPtr parse();
-  void parseStmts();
+  std::vector<AbsStmtPtr> &parseStmts();
   AbsStmtPtr statement();
   AbsStmtPtr printStmt();
   AbsStmtPtr exprStmt();
@@ -59,6 +59,7 @@ private:
   Parser() = default;
   std::list<Token> tokens;
   std::list<Token>::iterator curr;
+std::vector<AbsStmtPtr>  statements;
 };
 
 inline Parser::Parser(const std::list<Token> &tk) : tokens(tk) {
