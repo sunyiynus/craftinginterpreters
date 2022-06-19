@@ -13,7 +13,7 @@ SyntaxError::SyntaxError(const Token &t)
 
 std::vector<AbsStmtPtr> &Parser::parseStmts() {
   std::vector<AbsStmtPtr> stmts;
-  for (; !isAtEnd();) {
+  for (; !isAtEnd() && peek().type != TOKEN_TYPE::EOFI;) {
     auto stmttmp = statement();
     stmts.push_back(stmttmp);
   }

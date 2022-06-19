@@ -12,7 +12,9 @@ bstring PrintStmt::accept(AbsPrinterVisitor &visitor) {
   return str;
 }
 
-ObjectPtr PrintStmt::accept(AbsVisitor &visitor) {}
+ObjectPtr PrintStmt::accept(AbsVisitor &visitor) {
+  return nullptr;
+}
 
 bstring ExprStmt::accept(AbsPrinterVisitor &visitor) {
   bstring str{""};
@@ -20,4 +22,6 @@ bstring ExprStmt::accept(AbsPrinterVisitor &visitor) {
   return str;
 }
 
-ObjectPtr ExprStmt::accept(AbsVisitor &visitor) {}
+ObjectPtr ExprStmt::accept(AbsVisitor &visitor) {
+  return nullptr;
+}
