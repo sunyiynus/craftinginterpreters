@@ -14,6 +14,7 @@ const bstring BooleanTypeStr{"Boolean"};
 const bstring NilTypeStr{"Nil"};
 
 struct Object {
+  typedef std::shared_ptr<Object> ptr;
   Object(const bstring &t);
   bstring type;
 

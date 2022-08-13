@@ -4,24 +4,3 @@
 #include "types.h"
 
 using namespace bello;
-
-bstring PrintStmt::accept(AbsPrinterVisitor &visitor) {
-  bstring str{"print "};
-  str += expr->accept(visitor);
-  str += ";";
-  return str;
-}
-
-ObjectPtr PrintStmt::accept(AbsVisitor &visitor) {
-  return nullptr;
-}
-
-bstring ExprStmt::accept(AbsPrinterVisitor &visitor) {
-  bstring str{""};
-  str += expr->accept(visitor) + ";";
-  return str;
-}
-
-ObjectPtr ExprStmt::accept(AbsVisitor &visitor) {
-  return nullptr;
-}

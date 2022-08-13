@@ -9,6 +9,7 @@
 #include "parser.h"
 #include <string>
 
+/*
 TEST_CASE("Interpreter testing - normal") {
   std::string express = " 1 + 2 + 3 * (5 -1)";
   bello::Scanner lexer{express};
@@ -129,3 +130,4 @@ TEST_CASE("Interpreter testing - normal - 05 - comparsion") {
   REQUIRE(origResPtr->value == false);
   WARN(origResPtr->value);
 }
+*/
