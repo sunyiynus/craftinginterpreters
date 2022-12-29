@@ -1,3 +1,4 @@
+#include "statement.h"
 #ifndef PARSER_H
 #include "lex.h"
 #include <exception>
@@ -28,15 +29,21 @@ public:
   Parser &operator=(const Parser &) = default;
   ~Parser() = default;
 
-  AbsExprPtr parse();
+  AbsExpr::ptr parse();
+  /*
+  std::vector<AbsStmt::ptr> &parseStmts();
+  AbsStmt::ptr statement();
+  AbsStmt::ptr printStmt();
+  AbsStmt::ptr exprStmt();
+  */
 
-  AbsExprPtr expression();
-  AbsExprPtr equality();
-  AbsExprPtr comparison();
-  AbsExprPtr term();
-  AbsExprPtr factor();
-  AbsExprPtr unary();
-  AbsExprPtr primary();
+  AbsExpr::ptr expression();
+  AbsExpr::ptr equality();
+  AbsExpr::ptr comparison();
+  AbsExpr::ptr term();
+  AbsExpr::ptr factor();
+  AbsExpr::ptr unary();
+  AbsExpr::ptr primary();
 
   Token &consume(TOKEN_TYPE type, bstring message);
   void error(const Token &tk, bstring msg);
@@ -54,6 +61,7 @@ private:
   Parser() = default;
   std::list<Token> tokens;
   std::list<Token>::iterator curr;
+  // std::vector<AbsStmtPtr>  statements;
 };
 
 inline Parser::Parser(const std::list<Token> &tk) : tokens(tk) {

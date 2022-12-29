@@ -2,6 +2,7 @@
 #include "errorreport.h"
 #include "expr.h"
 #include "lex.h"
+#include "statement.h"
 #include <list>
 #include <memory>
 
@@ -10,82 +11,109 @@ using namespace bello;
 SyntaxError::SyntaxError(const Token &t)
     : std::runtime_error("Error Syntax"), tk(t) {}
 
-AbsExprPtr Parser::expression() { return equality(); }
+/*
+std::vector<AbsStmtPtr> &Parser::parseStmts() {
+  std::vector<AbsStmtPtr> stmts;
+  for (; !isAtEnd() && peek().type != TOKEN_TYPE::EOFI;) {
+    auto stmttmp = statement();
+    stmts.push_back(stmttmp);
+  }
 
-AbsExprPtr Parser::equality() {
-  AbsExprPtr expr = comparison();
+  statements = stmts;
+  return statements;
+}
+
+AbsStmtPtr Parser::statement() {
+  if (match({TOKEN_TYPE::PRINT}))
+    return printStmt();
+
+  return exprStmt();
+}
+
+AbsStmtPtr Parser::printStmt() {
+  AbsExprPtr expr = expression();
+  consume(TOKEN_TYPE::SEMICOLON, "Expect ';' after value");
+  return std::make_shared<PrintStmt>(expr);
+}
+
+AbsStmtPtr Parser::exprStmt() {
+  AbsExprPtr expr = expression();
+  consume(TOKEN_TYPE::SEMICOLON, "Expect ';' after value");
+  return std::make_shared<ExprStmt>(expr);
+}
+*/
+AbsExpr::ptr Parser::expression() { return equality(); }
+
+AbsExpr::ptr Parser::equality() {
+  AbsExpr::ptr expr = comparison();
 
   while (match(std::vector<TOKEN_TYPE>{TOKEN_TYPE::EQUAL_EQUAL,
                                        TOKEN_TYPE::NOT_EQUAL})) {
     Token operater = previous();
-    AbsExprPtr right = comparison();
-    expr = std::make_shared<Expr<BinaryPackage>>(
-        BinaryPackage(operater, expr, right));
+    AbsExpr::ptr right = comparison();
+    expr = BinaryExpr::create(expr, right, operater);
   }
 
   return expr;
 }
 
-AbsExprPtr Parser::comparison() {
-  AbsExprPtr expr = term();
+AbsExpr::ptr Parser::comparison() {
+  AbsExpr::ptr expr = term();
   while (match({TOKEN_TYPE::GREATER, TOKEN_TYPE::GREATER_EQUAL,
                 TOKEN_TYPE::LESS, TOKEN_TYPE::LESS_EQUAL})) {
     Token operater = previous();
-    AbsExprPtr right = term();
-    expr = std::make_shared<Expr<BinaryPackage>>(
-        BinaryPackage(operater, expr, right));
+    AbsExpr::ptr right = term();
+    expr = BinaryExpr::create(expr, right, operater);
   }
   return expr;
 }
 
-AbsExprPtr Parser::term() {
-  AbsExprPtr expr = factor();
+AbsExpr::ptr Parser::term() {
+  AbsExpr::ptr expr = factor();
   while (match({TOKEN_TYPE::MINUS, TOKEN_TYPE::PLUS})) {
     Token operater = previous();
-    AbsExprPtr right = factor();
-    expr = std::make_shared<Expr<BinaryPackage>>(
-        BinaryPackage(operater, expr, right));
+    AbsExpr::ptr right = factor();
+    expr = BinaryExpr::create(expr, right, operater);
   }
   return expr;
 }
 
-AbsExprPtr Parser::factor() {
-  AbsExprPtr expr = unary();
+AbsExpr::ptr Parser::factor() {
+  AbsExpr::ptr expr = unary();
   while (match({TOKEN_TYPE::STAR, TOKEN_TYPE::SLASH})) {
     Token operater = previous();
-    AbsExprPtr right = unary();
-    expr = std::make_shared<Expr<BinaryPackage>>(
-        BinaryPackage(operater, expr, right));
+    AbsExpr::ptr right = unary();
+    expr = BinaryExpr::create(expr, right, operater);
   }
   return expr;
 }
 
-AbsExprPtr Parser::unary() {
-  AbsExprPtr expr;
+AbsExpr::ptr Parser::unary() {
+  AbsExpr::ptr expr;
   if (match({TOKEN_TYPE::NOT, TOKEN_TYPE::MINUS})) {
     Token operater = previous();
-    AbsExprPtr right = unary();
-    return std::make_shared<Expr<UnaryPackage>>(UnaryPackage(operater, right));
+    AbsExpr::ptr right = unary();
+    return UnaryExpr::create(right, operater);
   }
   return primary();
 }
 
-AbsExprPtr Parser::primary() {
+AbsExpr::ptr Parser::primary() {
   if (match({TOKEN_TYPE::FALSE}))
-    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
+    return LiteralExpr::create(previous());
   if (match({TOKEN_TYPE::TRUE}))
-    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
+    return LiteralExpr::create(previous());
   if (match({TOKEN_TYPE::NIL}))
-    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
+    return LiteralExpr::create(previous());
   if (match({TOKEN_TYPE::NUMBER, TOKEN_TYPE::STRING, TOKEN_TYPE::IDENTIFIER}))
-    return std::make_shared<Expr<LiteralPackage>>(LiteralPackage(previous()));
+    return LiteralExpr::create(previous());
 
   if (match({TOKEN_TYPE::LEFT_PAREN})) {
-    AbsExprPtr expr = expression();
+    AbsExpr::ptr expr = expression();
     consume(TOKEN_TYPE::RIGHT_PAREN, "Expect ')' after expression.");
-    return std::make_shared<Expr<GroupPackage>>(GroupPackage(expr));
+    return GroupExpr::create(expr);
   }
-  //return nullptr;
+  // return nullptr;
 }
 
 Token &Parser::consume(TOKEN_TYPE type, bstring message) {
@@ -158,8 +186,8 @@ void Parser::error(const Token &tk, bstring msg) {
   throw SyntaxError(tk);
 }
 
-AbsExprPtr Parser::parse() {
-  AbsExprPtr expr;
+AbsExpr::ptr Parser::parse() {
+  AbsExpr::ptr expr;
   try {
     expr = expression();
   } catch (SyntaxError &serror) {
