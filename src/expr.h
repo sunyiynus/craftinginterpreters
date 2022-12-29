@@ -12,45 +12,39 @@
 
 namespace bello {
 
+template <typename... Types> class PrintVisitor;
 
-template<typename ...Types>
-class PrintVisitor;
-
-
-template<typename T>
-class PrintVisitor<T> {
+template <typename T> class PrintVisitor<T> {
 public:
-  virtual bstring visit(T* t) = 0;
+  virtual bstring visit(T *t) = 0;
 };
 
-template<typename T, typename ...Types>
-class PrintVisitor<T, Types...>: public PrintVisitor<Types...> {
+template <typename T, typename... Types>
+class PrintVisitor<T, Types...> : public PrintVisitor<Types...> {
 public:
   using PrintVisitor<Types...>::visit;
-  virtual bstring visit(T* t) = 0;
+  virtual bstring visit(T *t) = 0;
 };
 
-using PrinterVisitor = PrintVisitor<class BinaryExpr, class UnaryExpr, class GroupExpr, class LiteralExpr>;
+using PrinterVisitor = PrintVisitor<class BinaryExpr, class UnaryExpr,
+                                    class GroupExpr, class LiteralExpr>;
 
+template <typename... Types> class EvalVisitor;
 
-template<typename ...Types>
-class EvalVisitor;
-
-template<typename T>
-class EvalVisitor<T> {
+template <typename T> class EvalVisitor<T> {
 public:
-  virtual Object::ptr visit(T* t) = 0;
+  virtual Object::ptr visit(T *t) = 0;
 };
 
-template<typename T, typename ...Types>
+template <typename T, typename... Types>
 class EvalVisitor<T, Types...> : public EvalVisitor<Types...> {
 public:
   using EvalVisitor<Types...>::visit;
-  virtual Object::ptr visit(T* t) = 0;
+  virtual Object::ptr visit(T *t) = 0;
 };
 
-using EvaluatorVisitor = EvalVisitor<class BinaryExpr, class UnaryExpr, class GroupExpr, class LiteralExpr>;
-
+using EvaluatorVisitor = EvalVisitor<class BinaryExpr, class UnaryExpr,
+                                     class GroupExpr, class LiteralExpr>;
 
 class AbsExpr {
 public:
@@ -68,21 +62,17 @@ public:
 private:
 };
 
-template <typename Derived> 
-class ExprVisitable : public AbsExpr{
+template <typename Derived> class ExprVisitable : public AbsExpr {
 public:
-  virtual bstring print(PrinterVisitor & visitor)
-  {
-    return visitor.visit(static_cast<Derived*>(this));
+  virtual bstring print(PrinterVisitor &visitor) {
+    return visitor.visit(static_cast<Derived *>(this));
   }
-  virtual Object::ptr evaluate(EvaluatorVisitor &visitor)
-  {
-    return visitor.visit(static_cast<Derived*>(this));
+  virtual Object::ptr evaluate(EvaluatorVisitor &visitor) {
+    return visitor.visit(static_cast<Derived *>(this));
   }
 };
 
-
-class BinaryExpr: public ExprVisitable<BinaryExpr> {
+class BinaryExpr : public ExprVisitable<BinaryExpr> {
 public:
   using ExprVisitable<BinaryExpr>::ExprVisitable;
 
@@ -111,6 +101,7 @@ public:
   Token tk;
   AbsExpr::ptr expr;
 };
+
 class LiteralExpr : public ExprVisitable<LiteralExpr> {
 public:
   using ExprVisitable<LiteralExpr>::ExprVisitable;
@@ -133,7 +124,6 @@ inline AbsExpr::ptr GroupExpr::create(const AbsExpr::ptr &e) {
 }
 
 inline GroupExpr::GroupExpr(const AbsExpr::ptr &e) : expr(e) {}
-
 
 inline AbsExpr::ptr UnaryExpr::create(const AbsExpr::ptr &e, const Token &t) {
   return std::make_shared<UnaryExpr>(e, t);
