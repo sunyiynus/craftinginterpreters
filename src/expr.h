@@ -12,11 +12,45 @@
 
 namespace bello {
 
-class AbsExpr;
-typedef std::shared_ptr<AbsExpr> AbsExprPtr;
+
+template<typename ...Types>
+class PrintVisitor;
 
 
-class VisitorBase;
+template<typename T>
+class PrintVisitor<T> {
+public:
+  virtual bstring visit(T* t) = 0;
+};
+
+template<typename T, typename ...Types>
+class PrintVisitor<T, Types...>: public PrintVisitor<Types...> {
+public:
+  using PrintVisitor<Types...>::visit;
+  virtual bstring visit(T* t) = 0;
+};
+
+using PrinterVisitor = PrintVisitor<class BinaryExpr, class UnaryExpr, class GroupExpr, class LiteralExpr>;
+
+
+template<typename ...Types>
+class EvalVisitor;
+
+template<typename T>
+class EvalVisitor<T> {
+public:
+  virtual Object::ptr visit(T* t) = 0;
+};
+
+template<typename T, typename ...Types>
+class EvalVisitor<T, Types...> : public EvalVisitor<Types...> {
+public:
+  using EvalVisitor<Types...>::visit;
+  virtual Object::ptr visit(T* t) = 0;
+};
+
+using EvaluatorVisitor = EvalVisitor<class BinaryExpr, class UnaryExpr, class GroupExpr, class LiteralExpr>;
+
 
 class AbsExpr {
 public:
@@ -28,73 +62,60 @@ public:
   AbsExpr &operator=(const AbsExpr &) = default;
   ~AbsExpr() = default;
 
-  virtual bstring print(VisitorBase &visitor) = 0;
-  virtual Object::ptr evaluate(VisitorBase &visitor) = 0;
+  virtual bstring print(PrinterVisitor &visitor) = 0;
+  virtual Object::ptr evaluate(EvaluatorVisitor &visitor) = 0;
 
 private:
 };
 
-class VisitorBase {
+template <typename Derived> 
+class ExprVisitable : public AbsExpr{
 public:
-  virtual ~VisitorBase() {}
-};
-
-template <typename Visitable> class Visitor {
-public:
-  virtual bstring print(Visitable *visitable) = 0;
-  virtual Object::ptr evaluate(Visitable *visitable) = 0;
-};
-
-template <typename T> class Visitable : public AbsExpr {
-public:
-  bstring print(VisitorBase &t) override {
-    if (Visitor<T> *vptr = dynamic_cast<Visitor<T> *>(&t)) {
-      return vptr->print(static_cast<T *>(this));
-    } else {
-      assert(false);
-    }
-    return {};
+  virtual bstring print(PrinterVisitor & visitor)
+  {
+    return visitor.visit(static_cast<Derived*>(this));
   }
-
-  Object::ptr evaluate(VisitorBase &t) override {
-    if (Visitor<T> *vptr = dynamic_cast<Visitor<T> *>(&t)) {
-      return vptr->evaluate(static_cast<T *>(this));
-    } else {
-      assert(false);
-    }
-    return {};
+  virtual Object::ptr evaluate(EvaluatorVisitor &visitor)
+  {
+    return visitor.visit(static_cast<Derived*>(this));
   }
 };
 
-class BinaryExpr;
-class GroupExpr;
-class UnaryExpr;
-class LiteralExpr;
 
-class BinaryExprVisitor : public Visitor<BinaryExpr> {
-  using Visitor<BinaryExpr>::Visitor;
-};
-
-class GroupExprVisitor : public Visitor<GroupExpr> {
-  using Visitor<GroupExpr>::Visitor;
-};
-
-class UnaryExprVisitor : public Visitor<UnaryExpr> {
-  using Visitor<UnaryExpr>::Visitor;
-};
-
-class LiteralExprVisitor : public Visitor<LiteralExpr> {
-  using Visitor<LiteralExpr>::Visitor;
-};
-
-class BinaryExpr : public Visitable<BinaryExpr> {
+class BinaryExpr: public ExprVisitable<BinaryExpr> {
 public:
+  using ExprVisitable<BinaryExpr>::ExprVisitable;
+
   static AbsExpr::ptr create(const AbsExpr::ptr &l, const AbsExpr::ptr &r,
                              const Token &tt);
   BinaryExpr(const AbsExpr::ptr &l, const AbsExpr::ptr &r, const Token &tt);
 
   AbsExpr::ptr left;
   AbsExpr::ptr right;
+  Token tk;
+};
+
+class GroupExpr : public ExprVisitable<GroupExpr> {
+public:
+  using ExprVisitable<GroupExpr>::ExprVisitable;
+  static AbsExpr::ptr create(const AbsExpr::ptr &e);
+  GroupExpr(const AbsExpr::ptr &e);
+  AbsExpr::ptr expr;
+};
+
+class UnaryExpr : public ExprVisitable<UnaryExpr> {
+public:
+  using ExprVisitable<UnaryExpr>::ExprVisitable;
+  static AbsExpr::ptr create(const AbsExpr::ptr &e, const Token &t);
+  UnaryExpr(const AbsExpr::ptr &e, const Token &t);
+  Token tk;
+  AbsExpr::ptr expr;
+};
+class LiteralExpr : public ExprVisitable<LiteralExpr> {
+public:
+  using ExprVisitable<LiteralExpr>::ExprVisitable;
+  static AbsExpr::ptr create(const Token &t);
+  LiteralExpr(const Token &t);
   Token tk;
 };
 
@@ -107,26 +128,12 @@ inline BinaryExpr::BinaryExpr(const AbsExpr::ptr &l, const AbsExpr::ptr &r,
                               const Token &tt)
     : left(l), right(r), tk(tt) {}
 
-class GroupExpr : public Visitable<GroupExpr> {
-public:
-  static AbsExpr::ptr create(const AbsExpr::ptr &e);
-  GroupExpr(const AbsExpr::ptr &e);
-  AbsExpr::ptr expr;
-};
-
 inline AbsExpr::ptr GroupExpr::create(const AbsExpr::ptr &e) {
   return std::make_shared<GroupExpr>(e);
 }
 
 inline GroupExpr::GroupExpr(const AbsExpr::ptr &e) : expr(e) {}
 
-class UnaryExpr : public Visitable<UnaryExpr> {
-public:
-  static AbsExpr::ptr create(const AbsExpr::ptr &e, const Token &t);
-  UnaryExpr(const AbsExpr::ptr &e, const Token &t);
-  Token tk;
-  AbsExpr::ptr expr;
-};
 
 inline AbsExpr::ptr UnaryExpr::create(const AbsExpr::ptr &e, const Token &t) {
   return std::make_shared<UnaryExpr>(e, t);
@@ -134,13 +141,6 @@ inline AbsExpr::ptr UnaryExpr::create(const AbsExpr::ptr &e, const Token &t) {
 
 inline UnaryExpr::UnaryExpr(const AbsExpr::ptr &e, const Token &t)
     : expr(e), tk(t) {}
-
-class LiteralExpr : public Visitable<LiteralExpr> {
-public:
-  static AbsExpr::ptr create(const Token &t);
-  LiteralExpr(const Token &t);
-  Token tk;
-};
 
 inline AbsExpr::ptr LiteralExpr::create(const Token &t) {
   return std::make_shared<LiteralExpr>(t);
