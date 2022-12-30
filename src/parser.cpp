@@ -11,9 +11,8 @@ using namespace bello;
 SyntaxError::SyntaxError(const Token &t)
     : std::runtime_error("Error Syntax"), tk(t) {}
 
-/*
-std::vector<AbsStmtPtr> &Parser::parseStmts() {
-  std::vector<AbsStmtPtr> stmts;
+std::vector<AbsStmt::ptr> &Parser::parseStmts() {
+  std::vector<AbsStmt::ptr> stmts;
   for (; !isAtEnd() && peek().type != TOKEN_TYPE::EOFI;) {
     auto stmttmp = statement();
     stmts.push_back(stmttmp);
@@ -23,25 +22,25 @@ std::vector<AbsStmtPtr> &Parser::parseStmts() {
   return statements;
 }
 
-AbsStmtPtr Parser::statement() {
+AbsStmt::ptr Parser::statement() {
   if (match({TOKEN_TYPE::PRINT}))
     return printStmt();
 
   return exprStmt();
 }
 
-AbsStmtPtr Parser::printStmt() {
-  AbsExprPtr expr = expression();
+AbsStmt::ptr Parser::printStmt() {
+  AbsExpr::ptr expr = expression();
   consume(TOKEN_TYPE::SEMICOLON, "Expect ';' after value");
   return std::make_shared<PrintStmt>(expr);
 }
 
-AbsStmtPtr Parser::exprStmt() {
-  AbsExprPtr expr = expression();
+AbsStmt::ptr Parser::exprStmt() {
+  AbsExpr::ptr expr = expression();
   consume(TOKEN_TYPE::SEMICOLON, "Expect ';' after value");
   return std::make_shared<ExprStmt>(expr);
 }
-*/
+
 AbsExpr::ptr Parser::expression() { return equality(); }
 
 AbsExpr::ptr Parser::equality() {
