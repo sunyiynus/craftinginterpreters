@@ -1,10 +1,4 @@
--   id: clang-format
-    name: clang-format
-    description: ''
-    entry: clang-format -i
-    language: python
-    'types_or': [c++, c, c#, cuda, java, javascript, json, objective-c, proto]
-    args: ["-style=file"]
-    require_serial: false
-    additional_dependencies: []
-    minimum_pre_commit_version: '2.9.2'
+-   repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: ''  # Use the sha / tag you want to point at
+    hooks:
+    -   id: clang-format
