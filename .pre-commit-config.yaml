@@ -1,3 +1,4 @@
+repos:
 -   repo: https://github.com/pre-commit/mirrors-clang-format
     rev: ''  # Use the sha / tag you want to point at
     hooks:
