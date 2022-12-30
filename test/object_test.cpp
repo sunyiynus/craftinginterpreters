@@ -8,3 +8,11 @@ TEST_CASE("Testing function MakeObject()") {
   REQUIRE(p->value == 42);
   REQUIRE(p->type == "Number");
 }
+
+
+TEST_CASE("Testing function MakeObject()") {
+      auto p = bello::MakeObject<Number>(42);
+  REQUIRE(p->value == 42);
+  REQUIRE(p->type == "Number");
+}
+
