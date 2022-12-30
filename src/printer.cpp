@@ -36,5 +36,4 @@ bstring Printer::visit(LiteralExpr *ue) {
   return res;
 }
 
-
 Printer::~Printer() {}
